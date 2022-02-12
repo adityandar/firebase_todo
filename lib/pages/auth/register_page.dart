@@ -1,4 +1,4 @@
-import 'package:firebase_todo/cubit/user_cubit.dart';
+import 'package:firebase_todo/cubit/user/user_cubit.dart';
 import 'package:firebase_todo/pages/todo/main_todo_page.dart';
 import 'package:firebase_todo/shared/theme.dart';
 import 'package:flutter/material.dart';
@@ -26,12 +26,12 @@ class RegisterPage extends StatelessWidget {
             child:
                 BlocConsumer<UserCubit, UserState>(listener: (context, state) {
               if (state is SuccessUserState) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MainTodoPage(user: state.user),
-                  ),
-                );
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MainTodoPage(user: state.user),
+                    ),
+                    (route) => false);
               }
             }, builder: (context, state) {
               if (state is FailureUserState) {

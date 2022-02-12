@@ -36,4 +36,10 @@ class UserCubit extends Cubit<UserState> {
       emit(FailureUserState(errorMessage: msg));
     }
   }
+
+  void logout() {
+    emit(LoadingLoginUserState());
+    _authService.signOut();
+    emit(InitialUserState());
+  }
 }
