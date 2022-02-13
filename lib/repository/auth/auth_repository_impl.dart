@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_todo/repository/auth/auth_repository.dart';
 
-class AuthService {
+class AuthRepositoryImpl extends AuthRepository {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  @override
   Future<User?> register(String email, String password) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
+      UserCredential userCredential = await _firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
@@ -21,9 +24,10 @@ class AuthService {
     }
   }
 
+  @override
   Future<User?> signIn(String email, String password) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
+      UserCredential userCredential = await _firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
@@ -39,7 +43,13 @@ class AuthService {
     }
   }
 
+  @override
   Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
+    await _firebaseAuth.signOut();
+  }
+
+  @override
+  Stream<User?> checkAuth() {
+    return _firebaseAuth.authStateChanges();
   }
 }

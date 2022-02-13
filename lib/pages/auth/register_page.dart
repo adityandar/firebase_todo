@@ -23,102 +23,104 @@ class RegisterPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
           child: Form(
             key: _formKey,
-            child:
-                BlocConsumer<UserCubit, UserState>(listener: (context, state) {
-              if (state is SuccessUserState) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MainTodoPage(user: state.user),
+            child: BlocConsumer<UserCubit, UserState>(
+              listener: (context, state) {
+                if (state is SuccessUserState) {
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MainTodoPage(user: state.user),
+                      ),
+                      (route) => false);
+                }
+              },
+              builder: (context, state) {
+                if (state is FailureUserState) {
+                  Fluttertoast.showToast(
+                    msg: state.errorMessage,
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.CENTER,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: primaryColor,
+                    textColor: whiteColor,
+                    fontSize: 16.0,
+                  );
+                }
+                return ListView(
+                  children: [
+                    SizedBox(
+                      height: 64,
                     ),
-                    (route) => false);
-              }
-            }, builder: (context, state) {
-              if (state is FailureUserState) {
-                Fluttertoast.showToast(
-                  msg: state.errorMessage,
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: alertColor,
-                  textColor: whiteColor,
-                  fontSize: 16.0,
+                    Center(
+                      child: Text("Register"),
+                    ),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: "Email",
+                      ),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) {
+                        if (value! == "") {
+                          return "Email can't be empty.";
+                        } else {
+                          if (!RegExp(
+                                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                              .hasMatch(value)) {
+                            return "Email is not valid.";
+                          }
+                        }
+                      },
+                    ),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        hintText: "Password",
+                      ),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) {
+                        if (value! == "") {
+                          return "Password can't be empty.";
+                        } else {
+                          if (value.length < 6) {
+                            return "Password can't be less than 6 characters";
+                          }
+                        }
+                      },
+                    ),
+                    SizedBox(height: 64),
+                    ElevatedButton(
+                      onPressed: (state is LoadingRegisterUserState)
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<UserCubit>().register(
+                                    _emailController.text,
+                                    _passwordController.text);
+                              }
+                            },
+                      child: (state is LoadingRegisterUserState)
+                          ? CircularProgressIndicator()
+                          : Text("Register"),
+                    ),
+                    ElevatedButton(
+                      onPressed: (state is LoadingLoginUserState)
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                context.read<UserCubit>().login(
+                                    _emailController.text,
+                                    _passwordController.text);
+                              }
+                            },
+                      child: (state is LoadingLoginUserState)
+                          ? CircularProgressIndicator()
+                          : Text("Login"),
+                    ),
+                  ],
                 );
-              }
-              return ListView(
-                children: [
-                  SizedBox(
-                    height: 64,
-                  ),
-                  Center(
-                    child: Text("Register"),
-                  ),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      hintText: "Email",
-                    ),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value! == "") {
-                        return "Email can't be empty.";
-                      } else {
-                        if (!RegExp(
-                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                            .hasMatch(value)) {
-                          return "Email is not valid.";
-                        }
-                      }
-                    },
-                  ),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      hintText: "Password",
-                    ),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (value) {
-                      if (value! == "") {
-                        return "Password can't be empty.";
-                      } else {
-                        if (value.length < 6) {
-                          return "Password can't be less than 6 characters";
-                        }
-                      }
-                    },
-                  ),
-                  SizedBox(height: 64),
-                  ElevatedButton(
-                    onPressed: (state is LoadingRegisterUserState)
-                        ? null
-                        : () {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<UserCubit>().register(
-                                  _emailController.text,
-                                  _passwordController.text);
-                            }
-                          },
-                    child: (state is LoadingRegisterUserState)
-                        ? CircularProgressIndicator()
-                        : Text("Register"),
-                  ),
-                  ElevatedButton(
-                    onPressed: (state is LoadingLoginUserState)
-                        ? null
-                        : () {
-                            if (_formKey.currentState!.validate()) {
-                              context.read<UserCubit>().login(
-                                  _emailController.text,
-                                  _passwordController.text);
-                            }
-                          },
-                    child: (state is LoadingLoginUserState)
-                        ? CircularProgressIndicator()
-                        : Text("Login"),
-                  ),
-                ],
-              );
-            }),
+              },
+            ),
           ),
         ),
       ),

@@ -39,3 +39,9 @@ class SuccessUpdateTodoState extends TodoState {
   @override
   List<Object?> get props => [];
 }
+
+class SuccessDeleteTodoState extends TodoState {
+  SuccessDeleteTodoState();
+  @override
+  List<Object?> get props => [];
+}

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_todo/cubit/todo/todo_cubit.dart';
 import 'package:firebase_todo/cubit/user/user_cubit.dart';
 import 'package:firebase_todo/pages/auth/register_page.dart';
+import 'package:firebase_todo/pages/todo/edit_todo_page.dart';
 import 'package:firebase_todo/pages/todo/new_todo_page.dart';
 import 'package:firebase_todo/shared/theme.dart';
 import 'package:flutter/material.dart';
@@ -32,16 +33,9 @@ class _MainTodoPageState extends State<MainTodoPage> {
       body: BlocBuilder<TodoCubit, TodoState>(
         builder: (context, state) {
           if (state is SuccessAddTodoState) {
-            Fluttertoast.showToast(
-              msg: "New todo has been added",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              backgroundColor: primaryColor,
-              textColor: whiteColor,
-              fontSize: 16.0,
-            );
-            // context.read<TodoCubit>().getAllTodo(userId!);
+            showToast("New todo has been added");
+          } else if (state is SuccessUpdateTodoState) {
+            showToast("A todo has been updated");
           } else if (state is SuccessGetTodoState) {
             return ListView.builder(
               itemCount: state.todos.length + 1,
@@ -52,31 +46,49 @@ class _MainTodoPageState extends State<MainTodoPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         context.read<UserCubit>().logout();
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegisterPage(),
-                            ),
-                            (route) => false);
+                        handleNavigation(
+                          page: RegisterPage(),
+                          isRemoveUntil: true,
+                        );
                       },
                       child: Text("Log Out"),
                     ),
                   );
                 }
                 return ListTile(
-                  title: Text(state.todos[idx].title),
+                  title: GestureDetector(
+                    child: Text(state.todos[idx].title),
+                    onTap: () {
+                      handleNavigation(
+                        page: EditTodoPage(
+                          todo: state.todos[idx],
+                          user: widget.user,
+                        ),
+                      );
+                    },
+                  ),
                   leading: Checkbox(
                     value: state.todos[idx].done,
-                    onChanged: (change) {
+                    onChanged: (bool? change) {
+                      if (change != null) {
+                        context
+                            .read<TodoCubit>()
+                            .changeTodoStatus(state.todos[idx], change);
+                      }
+                    },
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
                       context
                           .read<TodoCubit>()
-                          .changeTodoStatus(state.todos[idx]);
+                          .deleteTodo(state.todos[idx].id!);
                     },
+                    icon: Icon(Icons.close),
                   ),
                 );
               },
             );
-          } else if (state is LoadingTodoState) {}
+          }
           return Center(
             child: CircularProgressIndicator(),
           );
@@ -84,14 +96,45 @@ class _MainTodoPageState extends State<MainTodoPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => NewTodoPage(user: widget.user),
-            ),
+          handleNavigation(
+            page: NewTodoPage(user: widget.user),
           );
         },
+        child: Icon(Icons.add),
       ),
+    );
+  }
+
+  void handleNavigation({
+    required Widget page,
+    bool? isRemoveUntil,
+  }) {
+    if (isRemoveUntil ?? false) {
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => page,
+          ),
+          (route) => false);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => page,
+        ),
+      );
+    }
+  }
+
+  void showToast(String msg) {
+    Fluttertoast.showToast(
+      msg: msg,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: primaryColor,
+      textColor: whiteColor,
+      fontSize: 16.0,
     );
   }
 }

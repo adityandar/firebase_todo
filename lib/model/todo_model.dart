@@ -28,4 +28,18 @@ class TodoModel {
       'done': done,
     };
   }
+
+  TodoModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    bool? done,
+  }) {
+    return TodoModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      done: done ?? this.done,
+    );
+  }
 }

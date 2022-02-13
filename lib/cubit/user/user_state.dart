@@ -7,6 +7,11 @@ class InitialUserState extends UserState {
   List<Object?> get props => [];
 }
 
+class LoggedOutUserState extends UserState {
+  @override
+  List<Object?> get props => [];
+}
+
 class LoadingRegisterUserState extends UserState {
   @override
   List<Object?> get props => [];
@@ -29,6 +34,14 @@ class FailureUserState extends UserState {
 class SuccessUserState extends UserState {
   final User user;
   SuccessUserState({required this.user});
+
+  @override
+  List<Object?> get props => [user];
+}
+
+class LoggedInUserState extends UserState {
+  final User user;
+  LoggedInUserState({required this.user});
 
   @override
   List<Object?> get props => [user];

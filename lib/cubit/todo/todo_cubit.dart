@@ -1,18 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_todo/model/todo_model.dart';
-import 'package:firebase_todo/services/todo_service.dart';
+import 'package:firebase_todo/repository/todo/todo_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'todo_state.dart';
 
 class TodoCubit extends Cubit<TodoState> {
-  final TodoService _todoService;
-  TodoCubit(this._todoService) : super(InitialTodoState());
+  final TodoRepository _todoRepository;
+  TodoCubit(this._todoRepository) : super(InitialTodoState());
 
   void addTodo(TodoModel todo) {
     emit(LoadingTodoState());
     try {
-      _todoService.addTodo(todo);
+      _todoRepository.addTodo(todo);
       emit(SuccessAddTodoState());
     } catch (e) {
       //TODO: change this one.
@@ -20,16 +20,11 @@ class TodoCubit extends Cubit<TodoState> {
     }
   }
 
-  void changeTodoStatus(TodoModel todo) {
+  void changeTodoStatus(TodoModel todo, bool done) {
     emit(LoadingTodoState());
-    TodoModel newTodo = TodoModel(
-      title: todo.title,
-      done: !todo.done,
-      userId: todo.userId,
-      id: todo.id,
-    );
+    TodoModel newTodo = todo.copyWith(done: done);
     try {
-      _todoService.updateTodo(newTodo);
+      _todoRepository.updateTodo(newTodo);
       emit(SuccessUpdateTodoState());
     } catch (e) {
       //TODO: change this one.
@@ -37,8 +32,30 @@ class TodoCubit extends Cubit<TodoState> {
     }
   }
 
+  void updateTodo(TodoModel todo) {
+    emit(LoadingTodoState());
+    try {
+      _todoRepository.updateTodo(todo);
+      emit(SuccessUpdateTodoState());
+    } catch (e) {
+      //TODO: change this one.
+      emit(FailureTodoState(errorMessage: e.toString()));
+    }
+  }
+
+  void deleteTodo(String todoId) {
+    emit(LoadingTodoState());
+    try {
+      _todoRepository.deleteTodo(todoId);
+      emit(SuccessDeleteTodoState());
+    } catch (e) {
+      //TODO: change this one.
+      emit(FailureTodoState(errorMessage: e.toString()));
+    }
+  }
+
   void listenToChanges(String userId) async {
-    _todoService.changesOnTodo(userId).listen((res) {
+    _todoRepository.changesOnTodo(userId).listen((res) {
       emit(LoadingTodoState());
       List<TodoModel> todos = [];
       res.docs.forEach((doc) {
